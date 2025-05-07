@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile # Usaremos o mesmo Dockerfile, mas o docker-compose sobrescreverá o CMD para dev
+    ports:
+      - "3120:3000"
+    volumes:
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+      - ./generated:/app/generated # Mapear a pasta gerada pelo Prisma
+      - ./package.json:/app/package.json
+      - ./package-lock.json:/app/package-lock.json
+      - ./.env:/app/.env # Mapear o .env para dentro do container
+    command: npm run dev # Comando para desenvolvimento com nodemon
+    depends_on:
+      - db
+    environment:
+      DATABASE_URL: ${DATABASE_URL} # Pega do .env local
+      NODE_ENV: development
+
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres # Atualizado
+      POSTGRES_PASSWORD: postgres # Atualizado
+      POSTGRES_DB: api_rest_jwt # Atualizado
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data: 
